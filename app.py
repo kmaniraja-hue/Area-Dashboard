@@ -57,7 +57,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# 3. Exact File Mapping Matching Your GitHub Upload
+# 3. File Mapping
 PLANT_MODULES = {
     "🌐 IP Address Register": {
         "file": "IP address.xlsx",
@@ -90,11 +90,7 @@ PLANT_MODULES = {
 st.sidebar.markdown("## 🏭 Plant Asset Hub")
 st.sidebar.caption("Area Dashboard — C&I Operations")
 
-active_module = st.sidebar.radio(
-    "Select Active Register:",
-    list(PLANT_MODULES.keys())
-)
-
+active_module = st.sidebar.radio("Select Active Register:", list(PLANT_MODULES.keys()))
 selected_config = PLANT_MODULES[active_module]
 current_file = selected_config["file"]
 
@@ -129,9 +125,7 @@ if df is None:
 st.markdown(f'<div class="plant-header">{active_module}</div>', unsafe_allow_html=True)
 st.markdown(f'<div class="plant-sub">{selected_config["desc"]}</div>', unsafe_allow_html=True)
 
-# ------------------------------------------------------------------------------
-# MODULE 1: IP ADDRESS REGISTER
-# ------------------------------------------------------------------------------
+# Module 1: IP Register
 if selected_config["type"] == "ip":
     loc_col = [c for c in df.columns if "LOC" in str(c).upper() or "ROOM" in str(c).upper()]
     dev_col = [c for c in df.columns if "TYPE" in str(c).upper() or "DEVICE" in str(c).upper()]
@@ -150,9 +144,7 @@ if selected_config["type"] == "ip":
         loc_chart.columns = ["Location", "IP Count"]
         st.bar_chart(loc_chart.set_index("Location"), color="#38bdf8", use_container_width=True)
 
-# ------------------------------------------------------------------------------
-# MODULE 2: COFF STATUS (CUT-OFF VALVES)
-# ------------------------------------------------------------------------------
+# Module 2: Coff Status
 elif selected_config["type"] == "coff":
     area_col = [c for c in df.columns if "AREA" in str(c).upper() or "PHASE" in str(c).upper()]
     stat_col = [c for c in df.columns if "STATUS" in str(c).upper() or "HEALTH" in str(c).upper()]
@@ -172,9 +164,7 @@ elif selected_config["type"] == "coff":
         v_chart.columns = ["Area", "Valves"]
         st.bar_chart(v_chart.set_index("Area"), color="#06b6d4", use_container_width=True)
 
-# ------------------------------------------------------------------------------
-# MODULE 3: PMPS (POWER MODULES & SUPPLIES)
-# ------------------------------------------------------------------------------
+# Module 3: PMPS
 elif selected_config["type"] == "pmps":
     stn_col = [c for c in df.columns if "STATION" in str(c).upper() or "ROOM" in str(c).upper()]
     make_col = [c for c in df.columns if "MAKE" in str(c).upper()]
@@ -195,9 +185,7 @@ elif selected_config["type"] == "pmps":
         stn_counts.columns = ["Station", "Units"]
         st.bar_chart(stn_counts.set_index("Station"), color="#6366f1", use_container_width=True)
 
-# ------------------------------------------------------------------------------
-# MODULE 4: PR AND PO TRACKER (WITH OVERDUE ENGINE)
-# ------------------------------------------------------------------------------
+# Module 4: PR & PO Tracker
 elif selected_config["type"] == "pr_po":
     due_col = [c for c in df.columns if "DUE" in str(c).upper()]
     status_col = [c for c in df.columns if "STATUS" in str(c).upper() or "STAGE" in str(c).upper()]
@@ -244,9 +232,7 @@ elif selected_config["type"] == "pr_po":
     else:
         st.info("No 'Due Date' column found in this file to run delivery tracking.")
 
-# ------------------------------------------------------------------------------
-# MODULE 5: SPARES MASTER INVENTORY
-# ------------------------------------------------------------------------------
+# Module 5: Spares Inventory
 else:
     loc_candidates = ['CS06', 'CS11', 'CCR', 'TRNG', 'CS02', 'CS03', 'CS04', 'CS05', 'CS07', 'CS09', 'CS10']
     avail_locs = [c for c in loc_candidates if c in df.columns]
@@ -272,16 +258,14 @@ else:
 
 st.divider()
 
-# ------------------------------------------------------------------------------
-# DATA MATRIX & DIRECT SAVE BACK TO EXCEL
-# ------------------------------------------------------------------------------
+# Editable Matrix & Write Back
 st.subheader(f"Editable Matrix — {active_module}")
 
 search_txt = st.text_input("Search Line Items", placeholder="Search by tag, device, PO, item description...", label_visibility="collapsed")
 filtered_df = df.copy()
 
 if search_txt:
-    mask = filtered_df.astype(str).apply(lambda row: row.str.contains(search_txt, case=False).any(), axis=1)
+    mask = filtered_df.astype(str).apply(lambda r: r.str.contains(search_txt, case=False).any(), axis=1)
     filtered_df = filtered_df[mask]
 
 edited_df = st.data_editor(
